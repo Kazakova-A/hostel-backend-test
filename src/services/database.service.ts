@@ -2,16 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
 
 import { DATABASE } from 'src/config';
-
-interface Tables {
-  name: string;
-  fields: {
-    name: string;
-    type: string;
-    link?: string;
-    key?: string;
-  }[];
-}
+import { Tables } from 'src/utilities/types';
 
 @Injectable()
 export class DatabaseService {

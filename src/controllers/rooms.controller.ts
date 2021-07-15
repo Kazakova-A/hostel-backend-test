@@ -4,21 +4,7 @@ import * as moment from 'moment';
 import { RESPONSE_STATUSES as rs, SERVER_MESSAGES as sm } from 'src/config';
 import { RoomsService } from 'src/services/rooms.servise';
 import response from 'src/utilities/response';
-
-enum WeekDays {
-  monday = 1,
-  tuesday = 2,
-  wednesday = 3,
-  thursday = 4,
-  friday = 5,
-  saturday = 6,
-  sunday = 7,
-}
-
-const discounts = {
-  [10]: 0.9,
-  [20]: 0.8,
-};
+import { VALIDATED_WEEK_DAYS, DISCOUNTS } from 'src/utilities/constants';
 
 @Controller('rooms')
 export class RoomsController {
@@ -60,14 +46,12 @@ export class RoomsController {
       }
 
       //check if start and end date are valid
-      const startWeekDay = moment(startDate * 1000).isoWeekday();
-      const endWeekDay = moment(endDate * 1000).isoWeekday();
+      const startWeekDay = new Date(startDate * 1000).getDay();
+      const endWeekDay = new Date(endDate * 1000).getDay();
 
       if (
-        startWeekDay === WeekDays.monday ||
-        startWeekDay === WeekDays.thursday ||
-        endWeekDay === WeekDays.monday ||
-        endWeekDay === WeekDays.thursday
+        VALIDATED_WEEK_DAYS[startWeekDay] ||
+        VALIDATED_WEEK_DAYS[endWeekDay]
       ) {
         return response(req, res, rs[400], sm.incorrectBookingDates);
       }
@@ -77,12 +61,23 @@ export class RoomsController {
 
       const discount =
         10 <= diffInDays && diffInDays < 20
-          ? discounts[10]
+          ? DISCOUNTS[10]
           : diffInDays > 20
-          ? discounts[20]
+          ? DISCOUNTS[20]
           : 1;
 
       const totalPrice = roomRecord.price * diffInDays * discount;
+
+      const bookedRooms = await this.roomsService.getBookedRooms(
+        startDate,
+        endDate,
+      );
+
+      const isRoomBooked = bookedRooms.includes(roomId);
+
+      if (isRoomBooked) {
+        return response(req, res, rs[400], sm.alreadyExists);
+      }
 
       await this.roomsService.bookRoom({
         startDate,

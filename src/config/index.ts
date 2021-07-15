@@ -32,4 +32,5 @@ export const SERVER_MESSAGES = {
   internalServerError: 'INTERNAL_SERVER_ERROR',
   missingData: 'MISSING_DATA',
   incorrectBookingDates: 'INCORRECT_BOOKING_DATES',
+  alreadyExists: 'ALREADY_EXISTS',
 };
