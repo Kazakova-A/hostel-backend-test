@@ -13,6 +13,7 @@ async function bootstrap() {
       fields: [
         { name: 'name', type: 'text' },
         { name: 'floor', type: 'int' },
+        { name: 'price', type: 'int' },
       ],
     },
     {
@@ -32,11 +33,11 @@ async function bootstrap() {
   await seeder.seed({
     tableName: 'hotel_rooms',
     lines: [
-      { name: 'Single room', floor: 1 },
-      { name: 'Double room', floor: 1 },
-      { name: 'Quad room', floor: 3 },
-      { name: 'Twin room', floor: 3 },
-      { name: 'President room', floor: 4 },
+      { name: 'Single room', floor: 1, price: 1000 },
+      { name: 'Double room', floor: 1, price: 1000 },
+      { name: 'Quad room', floor: 3, price: 1000 },
+      { name: 'Twin room', floor: 3, price: 1000 },
+      { name: 'President room', floor: 4, price: 1000 },
     ],
   });
 
@@ -46,22 +47,36 @@ async function bootstrap() {
       {
         room_id: 1,
         client_email: 'user@mail.ru',
-        start_date: 1626426763,
-        end_date: 1626599563,
+        start_date: 1626094709,
+        end_date: 1626440309,
         total_price: 2000,
       },
       {
         room_id: 2,
         client_email: 'user2@mail.ru',
-        start_date: 1626426763,
-        end_date: 1626599563,
+        start_date: 1625662709,
+        end_date: 1625662709,
         total_price: 2000,
       },
       {
         room_id: 2,
         client_email: 'user3@mail.ru',
-        start_date: 1626772363,
-        end_date: 1626858763,
+        start_date: 1625835509,
+        end_date: 1626440309,
+        total_price: 1000,
+      },
+      {
+        room_id: 3,
+        client_email: 'user3@mail.ru',
+        start_date: 1627045109,
+        end_date: 1627045109,
+        total_price: 1000,
+      },
+      {
+        room_id: 5,
+        client_email: 'user5@mail.ru',
+        start_date: 1627451465,
+        end_date: 1627624265,
         total_price: 1000,
       },
     ],
