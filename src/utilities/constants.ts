@@ -12,3 +12,18 @@ export const DISCOUNTS = {
   [10]: 0.9,
   [20]: 0.8,
 };
+
+export const MONTHS = [
+  'january',
+  'february',
+  'march',
+  'april',
+  'may',
+  'jun',
+  'july',
+  'august',
+  'september',
+  'october',
+  'november',
+  'december',
+];

@@ -1,10 +1,10 @@
 import { Body, Controller, Query, Req, Res, Get, Post } from '@nestjs/common';
-import * as moment from 'moment';
 
 import { RESPONSE_STATUSES as rs, SERVER_MESSAGES as sm } from '../config';
 import { RoomsService } from '../services/rooms.servise';
 import response from '../utilities/response';
 import { VALIDATED_WEEK_DAYS, DISCOUNTS } from '../utilities/constants';
+import countDaysDifference from '../utilities/countTimeDifference';
 
 @Controller('rooms')
 export class RoomsController {
@@ -56,8 +56,7 @@ export class RoomsController {
         return response(req, res, rs[400], sm.incorrectBookingDates);
       }
 
-      const diff = moment(endDate * 1000).diff(startDate * 1000);
-      const diffInDays = moment.duration(diff).days();
+      const diffInDays = countDaysDifference(startDate, endDate);
 
       const discount =
         10 <= diffInDays && diffInDays < 20
