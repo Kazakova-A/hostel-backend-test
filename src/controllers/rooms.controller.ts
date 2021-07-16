@@ -1,10 +1,10 @@
 import { Body, Controller, Query, Req, Res, Get, Post } from '@nestjs/common';
 import * as moment from 'moment';
 
-import { RESPONSE_STATUSES as rs, SERVER_MESSAGES as sm } from 'src/config';
-import { RoomsService } from 'src/services/rooms.servise';
-import response from 'src/utilities/response';
-import { VALIDATED_WEEK_DAYS, DISCOUNTS } from 'src/utilities/constants';
+import { RESPONSE_STATUSES as rs, SERVER_MESSAGES as sm } from '../config';
+import { RoomsService } from '../services/rooms.servise';
+import response from '../utilities/response';
+import { VALIDATED_WEEK_DAYS, DISCOUNTS } from '../utilities/constants';
 
 @Controller('rooms')
 export class RoomsController {

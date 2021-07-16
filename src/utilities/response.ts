@@ -1,4 +1,4 @@
-import { RESPONSE_STATUSES as rs, SERVER_MESSAGES as sm } from 'src/config';
+import { RESPONSE_STATUSES as rs, SERVER_MESSAGES as sm } from '../config';
 import { ResponseObject } from './types';
 
 export default (

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
 
-import { DATABASE } from 'src/config';
-import { Tables } from 'src/utilities/types';
+import { DATABASE } from '../config';
+import { Tables } from '../utilities/types';
 
 @Injectable()
 export class DatabaseService {

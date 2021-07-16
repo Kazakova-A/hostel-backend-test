@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
 
-import { DATABASE } from 'src/config';
-import { HotelRoomRecord, BookRoom } from 'src/utilities/types';
+import { DATABASE } from '../config';
+import { HotelRoomRecord, BookRoom } from '../utilities/types';
 
 @Injectable()
 export class RoomsService {
