@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
 
 import { DATABASE } from '../config';
-import { MONTHS } from '../utilities/constants';
 
 @Injectable()
 export class ReportsService {
@@ -17,12 +16,6 @@ export class ReportsService {
     });
 
     this.client.connect();
-  }
-
-  getReports(start: number, end: number) {
-    return `start: ${start}
-            end: ${end}    
-      `;
   }
 
   async getBookedRoomByQuery(query) {

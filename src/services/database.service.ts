@@ -62,10 +62,6 @@ export class DatabaseService {
     } catch (error) {
       console.log(error);
     }
-    // TODO: return client closing if nessesary
-    // finally {
-    //   this.client.end();
-    // }
   }
 
   async insertLine({

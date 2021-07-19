@@ -13,10 +13,11 @@ export default (
   endDate?: number,
 ): Stats[] => {
   return array.reduce((accum, item) => {
-    const diff = countTimeDifference(
-      startDate || item.start_date,
-      endDate || item.end_date,
-    );
+    const diffStart =
+      startDate >= item.start_date ? startDate : item.start_date;
+    const diffEnd = endDate <= item.end_date ? endDate : item.end_date;
+
+    const diff = countTimeDifference(diffStart, diffEnd, 'days');
 
     const index = accum.findIndex((elem) => elem.room_id === item.room_id);
 

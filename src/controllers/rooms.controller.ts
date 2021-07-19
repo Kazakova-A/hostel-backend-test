@@ -56,7 +56,7 @@ export class RoomsController {
         return response(req, res, rs[400], sm.incorrectBookingDates);
       }
 
-      const diffInDays = countDaysDifference(startDate, endDate);
+      const diffInDays = countDaysDifference(startDate, endDate, 'days');
 
       const discount =
         10 <= diffInDays && diffInDays < 20

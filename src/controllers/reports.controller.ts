@@ -4,7 +4,7 @@ import * as moment from 'moment';
 import { ReportsService } from '../services/reports.servise';
 import response from '../utilities/response';
 import { BookedRoomInfo } from '../utilities/types';
-import getMonthList from '../utilities/getMonthList';
+import { MONTHS } from '../utilities/constants';
 import { RESPONSE_STATUSES as rs, SERVER_MESSAGES as sm } from '../config';
 import createStatsForMonth from '../utilities/createStatsForMonth';
 import countTimeDifference from '../utilities/countTimeDifference';
@@ -16,8 +16,8 @@ export class ReportsController {
   @Get()
   async getFreeRooms(@Req() req, @Res() res, @Query() query) {
     try {
-      //1637473541
-      const { startDate = 1634190341, endDate = 1642743941 } = query;
+      const stats = {};
+      const { startDate, endDate } = query;
       const defaultQuery = `
         SELECT b.*, h."name"
               FROM "booking" b
@@ -28,13 +28,9 @@ export class ReportsController {
         return response(req, res, rs[400], sm.missingData);
       }
 
-      const startMonthDate = new Date(startDate * 1000).getMonth();
-      const endMonthDate = new Date(endDate * 1000).getMonth();
+      const startMonth = new Date(startDate * 1000).getMonth();
+      const endMonth = new Date(endDate * 1000).getMonth();
       const diff = countTimeDifference(startDate, endDate, 'months');
-
-      // get month, which should be in the report
-      const keys = getMonthList(startMonthDate, endMonthDate);
-      console.log('keys----', keys);
 
       if (diff === 0) {
         const query = `
@@ -47,57 +43,102 @@ export class ReportsController {
 
         // get stats for one month
         const data = createStatsForMonth(bookedRooms);
+
+        stats[MONTHS[startMonth]] = data;
       }
 
-      if (diff > 1) {
-        // get the 1st day of the 2th month
-        const firstMonthEndDay = moment(startDate * 1000)
+      if (diff >= 1) {
+        // get the 1st day of the 2 month
+        const firstMonthEndDate = moment(startDate * 1000)
           .seconds(0)
           .minute(0)
           .hours(0)
           .date(1)
-          .month(startMonthDate);
+          .month(startMonth);
 
-        const firstMonthEnd = moment(firstMonthEndDay)
+        const firstMonthEnd = moment(firstMonthEndDate)
           .add(1, 'months')
           .format('X');
 
-        const firstPartQuery = `
-          ${defaultQuery}
-                WHERE (b."start_date" >= ${startDate} AND b."start_date" <= ${firstMonthEnd})
-            `;
         // get stats for the first month
-        const bookedRooms: BookedRoomInfo[] =
-          await this.reportsService.getBookedRoomByQuery(firstPartQuery);
+        const firstMonthStatsQuery = `
+          ${defaultQuery}
+                WHERE (b."start_date" < ${startDate} AND b."start_date" <= ${firstMonthEnd})
+                OR (b."end_date" >= ${startDate} AND b."end_date" <= ${firstMonthEnd})
+            `;
+
+        const firstMonthBookedRooms: BookedRoomInfo[] =
+          await this.reportsService.getBookedRoomByQuery(firstMonthStatsQuery);
 
         const firstMonthStats = createStatsForMonth(
-          bookedRooms,
-          null,
+          firstMonthBookedRooms,
+          startDate,
           Number(firstMonthEnd),
         );
 
-        if (diff >= 2) {
-          // get stats for the second month
-          const secondMonthStats = createStatsForMonth(
-            bookedRooms,
-            Number(firstMonthEnd),
-          );
-        } else {
-          console.log('keys', keys);
-          // TODO: add logic for getting statistic for more then 2 months
+        stats[MONTHS[startMonth]] = firstMonthStats;
+
+        if (diff > 1) {
+          const startCycle = startMonth === 11 ? 0 : startMonth + 1;
+
+          for (let i = startCycle; i !== endMonth; ) {
+            const iterationMonthStartDate = moment(startDate * 1000)
+              .seconds(0)
+              .minute(0)
+              .hours(0)
+              .date(1)
+              .month(i);
+
+            const iterationMonthEndDate = moment(iterationMonthStartDate).add(
+              1,
+              'months',
+            );
+
+            const start = Number(iterationMonthStartDate.format('X'));
+            const end = Number(iterationMonthEndDate.format('X'));
+            const query = `
+            ${defaultQuery}
+                  WHERE (b."start_date" >= ${start} AND b."start_date" <= ${end})
+                  OR (b."end_date" >= ${start} AND b."end_date" <= ${end})
+              `;
+
+            const bookedRooms: BookedRoomInfo[] =
+              await this.reportsService.getBookedRoomByQuery(query);
+
+            const statistics = createStatsForMonth(bookedRooms, start, end);
+            stats[MONTHS[i]] = statistics;
+
+            if (i === 11) i = 0;
+            else i++;
+          }
         }
+
+        // get stats for the last month
+        const lasMonthStartDay = moment(endDate * 1000)
+          .seconds(0)
+          .minute(0)
+          .hours(0)
+          .date(1)
+          .month(endMonth)
+          .format('X');
+
+        const lastMonthStatsQuery = `
+        ${defaultQuery}
+              WHERE (b."start_date" < ${endDate} AND b."end_date" >= ${lasMonthStartDay})
+          `;
+
+        const lastMonthBookedRooms: BookedRoomInfo[] =
+          await this.reportsService.getBookedRoomByQuery(lastMonthStatsQuery);
+        const secondMonthStats = createStatsForMonth(
+          lastMonthBookedRooms,
+          Number(lasMonthStartDay),
+          Number(endDate),
+        );
+
+        stats[MONTHS[endMonth]] = secondMonthStats;
       }
 
-      // TODO: investigate the better way to create the response data structure regardless of the number of months
-      // {
-      //    january: [
-      //      room1 : {},
-      //      room2: {},
-      //    ],
-      //    february: [...]
-      // }
-
-      return response(req, res, rs[200], sm.ok);
+      return response(req, res, rs[200], sm.ok, stats);
     } catch (error) {
       return response(req, res, rs[500], sm.internalServerError);
     }
