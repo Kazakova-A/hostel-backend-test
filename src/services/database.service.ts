@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
+import * as moment from 'moment';
 
 import { DATABASE } from '../config';
 import { Tables } from '../utilities/types';
+
+import { VALIDATED_WEEK_DAYS, DISCOUNTS } from '../utilities/constants';
+import countDaysDifference from '../utilities/countTimeDifference';
 
 @Injectable()
 export class DatabaseService {
@@ -112,5 +116,69 @@ export class DatabaseService {
     );
 
     await Promise.all(promises);
+  }
+
+  async seedBooking(id: number) {
+    let startDate = 1634450303;
+
+    const BOOK_FOR_EACH_ROOM = 15;
+    const DELAY = 5;
+    const PRICE = 1000;
+
+    for (let i = 1; i <= BOOK_FOR_EACH_ROOM; i++) {
+      const bookDuration = Math.floor(Math.random() * 9 + 1);
+      let endDate = Number(
+        moment(startDate * 1000)
+          .add(bookDuration, 'days')
+          .format('X'),
+      );
+
+      //check if start and end date are valid
+      const startWeekDay = new Date(startDate * 1000).getDay();
+      const endWeekDay = new Date(endDate * 1000).getDay();
+
+      if (
+        VALIDATED_WEEK_DAYS[startWeekDay] ||
+        VALIDATED_WEEK_DAYS[endWeekDay]
+      ) {
+        startDate = VALIDATED_WEEK_DAYS[startWeekDay]
+          ? Number(moment(startDate).add(1, 'days').format('X')) * 1000
+          : startDate;
+
+        endDate = VALIDATED_WEEK_DAYS[startWeekDay]
+          ? Number(moment(startDate).add(1, 'days').format('X')) * 1000
+          : endDate;
+      }
+
+      const diffInDays = countDaysDifference(startDate, endDate, 'days');
+
+      const discount =
+        10 <= diffInDays && diffInDays < 20
+          ? DISCOUNTS[10]
+          : diffInDays > 20
+          ? DISCOUNTS[20]
+          : 1;
+
+      const total = PRICE * diffInDays * discount;
+
+      const payload = {
+        room_id: id,
+        client_email: `user${bookDuration}@mail.ru`,
+        start_date: startDate,
+        end_date: endDate,
+        total_price: total,
+      };
+
+      this.seed({
+        tableName: 'booking',
+        lines: [payload],
+      });
+
+      startDate = Number(
+        moment(endDate * 1000)
+          .add(DELAY, 'days')
+          .format('X'),
+      );
+    }
   }
 }
