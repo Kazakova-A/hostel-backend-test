@@ -1,73 +1,73 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+## hotel-backend-test
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This is a backend for the test task
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Stack: [Node](https://nodejs.org/en/), [Nest.js](https://nestjs.com/), [PostgreSQL](https://www.postgresql.org/), 
 
-## Description
+### Deploy
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Local PostgreSQL installation is required
 
-## Installation
+PostgreSQL can be installed on MacOS with Brew:
+https://gist.github.com/peterdee/087dae4bb1ed7937c6f1d650059113fe
 
-```bash
-$ npm install
+Install PostgreSQL on Ubuntu:
+https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04
+
+After the installation you should create a role that is going to be used for the database access:
+
+```shell script
+sudo -u postgres createuser --interactive
+
+Enter name of role to add: <ROLE NAME>
+Shall the new role be a superuser? (y/n) <YES>
 ```
 
-## Running the app
+Created role should be a superuser
 
-```bash
-# development
-$ npm run start
+After creating a role, you should create a default database for that role:
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```shell script
+createdb <ROLE NAME>
 ```
 
-## Test
+After that, you should set a password for the created role via `psql`:
 
-```bash
-# unit tests
-$ npm run test
+```shell script
+psql
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+ALTER ROLE <ROLE NAME> WITH ENCRYPTED PASSWORD '<PASSWORD>';
 ```
 
-## Support
+Clone the project and install the dependencies:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```shell script
+git clone https://github.com/Kazakova-A/hostel-backend-test.git
+cd ./hostel-backend-test
+nvm use 14
+npm i
+```
 
-## Stay in touch
+### Environment
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+The `.env` file is required, see the [.env.example](.env.example) for details
 
-## License
+### Launch (development)
+Run the server in a terminal:
 
-Nest is [MIT licensed](LICENSE).
+```shell script
+npm run start:dev
+```
+
+### Testing
+
+Runs all of the available tests:
+
+```shell script
+npm run test
+```
+If some of the tests are not passing (this can be the case if you tried to run the tests before the synchronization), you can drop the database, run the synchronization script, and then run the tests again
+
+### Database
+
+See the [DATABASE.md](DATABASE.md) for details
