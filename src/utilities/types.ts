@@ -23,13 +23,16 @@ export interface Tables {
   }[];
 }
 
-export interface BookRoom {
-  startDate: number;
-  endDate: number;
-  roomId: number;
-  email: string;
-  price?: number;
-}
+export type BookRecord = {
+  id: number;
+  start_date: number;
+  end_date: number;
+  room_id: number;
+  client_email: string;
+  total_price?: number;
+};
+
+export type BookRoom = Omit<BookRecord, 'id'>;
 
 export enum Months {
   'january' = 0,

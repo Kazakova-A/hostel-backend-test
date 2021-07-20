@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
 
 import { DATABASE } from '../config';
+import { BookedRoomInfo } from '../utilities/types';
 
 @Injectable()
 export class ReportsService {
@@ -18,8 +19,12 @@ export class ReportsService {
     this.client.connect();
   }
 
-  async getBookedRoomByQuery(query) {
-    const { rows } = await this.client.query(query);
-    return rows;
+  async getBookedRoomByQuery(query): Promise<BookedRoomInfo[]> {
+    try {
+      const { rows } = await this.client.query(query);
+      return rows;
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 }

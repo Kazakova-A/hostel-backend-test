@@ -13,14 +13,14 @@ export class RoomsController {
   @Get()
   async getFreeRooms(@Req() req, @Res() res, @Query() query) {
     try {
-      const { startDate, endDate } = query;
+      const { start_date, end_date } = query;
 
-      if (!(startDate && endDate)) {
+      if (!(start_date && end_date)) {
         return response(req, res, rs[400], sm.missingData);
       }
       const result = await this.roomsService.getFreeRooms(
-        Number(startDate),
-        Number(endDate),
+        Number(start_date),
+        Number(end_date),
       );
 
       return response(req, res, rs[200], sm.ok, result);
@@ -32,22 +32,22 @@ export class RoomsController {
   @Post()
   async bookRoom(@Req() req, @Res() res, @Body() body) {
     try {
-      const { startDate, endDate, roomId, email } = body;
+      const { start_date, end_date, room_id, client_email } = body;
 
-      if (!(startDate && endDate && roomId && email)) {
+      if (!(start_date && end_date && room_id && client_email)) {
         return response(req, res, rs[400], sm.missingData);
       }
 
       // check if room record exists in the database
-      const roomRecord = await this.roomsService.getRoomById(roomId);
+      const roomRecord = await this.roomsService.getRoomById(room_id);
 
       if (!roomRecord) {
         return response(req, res, rs[404], sm.notFound);
       }
 
       //check if start and end date are valid
-      const startWeekDay = new Date(startDate * 1000).getDay();
-      const endWeekDay = new Date(endDate * 1000).getDay();
+      const startWeekDay = new Date(start_date * 1000).getDay();
+      const endWeekDay = new Date(end_date * 1000).getDay();
 
       if (
         VALIDATED_WEEK_DAYS[startWeekDay] ||
@@ -56,7 +56,7 @@ export class RoomsController {
         return response(req, res, rs[400], sm.incorrectBookingDates);
       }
 
-      const diffInDays = countDaysDifference(startDate, endDate, 'days');
+      const diffInDays = countDaysDifference(start_date, end_date, 'days');
 
       const discount =
         10 <= diffInDays && diffInDays < 20
@@ -68,25 +68,25 @@ export class RoomsController {
       const totalPrice = roomRecord.price * diffInDays * discount;
 
       const bookedRooms = await this.roomsService.getBookedRooms(
-        startDate,
-        endDate,
+        start_date,
+        end_date,
       );
 
-      const isRoomBooked = bookedRooms.includes(roomId);
+      const isRoomBooked = bookedRooms.includes(room_id);
 
       if (isRoomBooked) {
         return response(req, res, rs[400], sm.alreadyExists);
       }
 
-      await this.roomsService.bookRoom({
-        startDate,
-        endDate,
-        roomId,
-        email,
-        price: totalPrice,
+      const result = await this.roomsService.bookRoom({
+        start_date,
+        end_date,
+        room_id,
+        client_email,
+        total_price: totalPrice,
       });
 
-      return response(req, res, rs[201], sm.ok);
+      return response(req, res, rs[201], sm.ok, result);
     } catch (error) {
       return response(req, res, rs[500], sm.internalServerError);
     }

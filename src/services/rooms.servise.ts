@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
 
 import { DATABASE } from '../config';
-import { HotelRoomRecord, BookRoom } from '../utilities/types';
+import { HotelRoomRecord, BookRoom, BookRecord } from '../utilities/types';
 
 @Injectable()
 export class RoomsService {
@@ -19,52 +19,83 @@ export class RoomsService {
     this.client.connect();
   }
 
-  async getBookedRooms(startDate: number, endDate: number) {
-    const bookingQuery = `
-      SELECT *
-      FROM "booking" b
-      WHERE (b."start_date" >= ${startDate} AND b."end_date" <= ${endDate})
-      OR (b."start_date" >= ${startDate} AND b."start_date" <= ${endDate} AND b."end_date" >= ${endDate})
-      OR (
-        b."start_date" <= ${startDate} AND b."end_date" <= ${endDate} AND b."end_date" >= ${startDate}
-      )
-      OR (
-        b."start_date" <= ${startDate} AND b."end_date" >= ${endDate}
-      )
-    `;
+  async getBookedRooms(
+    start_date: number,
+    end_date: number,
+  ): Promise<string[]> {
+    try {
+      const bookingQuery = `
+        SELECT *
+        FROM "booking" b
+        WHERE (b."start_date" >= ${start_date} AND b."end_date" <= ${end_date})
+        OR (b."start_date" >= ${start_date} AND b."start_date" <= ${end_date} AND b."end_date" >= ${end_date})
+        OR (
+          b."start_date" <= ${start_date} AND b."end_date" <= ${end_date} AND b."end_date" >= ${start_date}
+        )
+        OR (
+          b."start_date" <= ${start_date} AND b."end_date" >= ${end_date}
+        )
+      `;
 
-    // get booked rooms for this date interval
-    const { rows } = await this.client.query(bookingQuery);
-    const bookedRooms = rows.map((item) => item.room_id);
-    return bookedRooms;
+      // get booked rooms for this date interval
+      const { rows } = await this.client.query(bookingQuery);
+      const bookedRooms = rows.map((item) => item.room_id);
+
+      return bookedRooms;
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
-  async getFreeRooms(startDate: number, endDate: number) {
-    const bookedRooms = await this.getBookedRooms(startDate, endDate);
-    const roomsQuery = `SELECT * FROM "hotel_rooms"`;
-    const { rows: rooms } = await this.client.query(roomsQuery);
-    const freeRooms = rooms.filter(({ id }) => !bookedRooms.includes(id));
+  async getFreeRooms(
+    start_date: number,
+    end_date: number,
+  ): Promise<HotelRoomRecord[]> {
+    try {
+      const bookedRooms = await this.getBookedRooms(start_date, end_date);
+      const roomsQuery = `SELECT * FROM "hotel_rooms"`;
+      const { rows: rooms } = await this.client.query(roomsQuery);
+      const freeRooms = rooms.filter(({ id }) => !bookedRooms.includes(id));
 
-    return freeRooms;
+      return freeRooms;
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
-  async bookRoom({ startDate, endDate, roomId, email, price }: BookRoom) {
-    const query = `
-      INSERT INTO "booking" (start_date, end_date, room_id, client_email, total_price)
-      VALUES (${startDate}, ${endDate}, ${roomId}, '${email}', ${price})
-    `;
+  async bookRoom({
+    start_date,
+    end_date,
+    room_id,
+    client_email,
+    total_price,
+  }: BookRoom): Promise<BookRecord> {
+    try {
+      const query = `
+        INSERT INTO "booking" (start_date, end_date, room_id, client_email, total_price)
+        VALUES (${start_date}, ${end_date}, ${room_id}, '${client_email}', ${total_price})
+        RETURNING *
+      `;
+      const { rows } = await this.client.query(query);
 
-    return this.client.query(query);
+      return rows[0];
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   async getRoomById(id: number): Promise<HotelRoomRecord | void> {
-    const query = `
-      SELECT * FROM "hotel_rooms" h
-      WHERE h."id" = ${id}
-    `;
+    try {
+      const query = `
+        SELECT * FROM "hotel_rooms" h
+        WHERE h."id" = ${id}
+      `;
 
-    const { rows } = await this.client.query(query);
+      const { rows } = await this.client.query(query);
 
-    return rows[0];
+      return rows[0];
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 }
