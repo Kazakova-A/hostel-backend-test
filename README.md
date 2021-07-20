@@ -52,6 +52,14 @@ npm i
 
 The `.env` file is required, see the [.env.example](.env.example) for details
 
+### Testing
+
+Create mock data:
+
+```shell script
+npm run seeding
+```
+
 ### Launch (development)
 Run the server in a terminal:
 
