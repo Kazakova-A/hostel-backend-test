@@ -39,6 +39,7 @@ describe('RoomsController', () => {
       start_date: 1633068135,
       end_date: 1634104935,
     };
+
     const result = await request(app.getHttpServer())
       .get('/rooms')
       .query(query);
@@ -72,5 +73,12 @@ describe('RoomsController', () => {
     expect(status).toBe(201);
     expect(message).toEqual('OK');
     expect(data.room_id).toBe(5);
+  });
+
+  it('/rooms (POST). Should return client side error', async () => {
+    const result = await request(app.getHttpServer()).post('/rooms');
+
+    expect(result.body.status).toBe(400);
+    expect(result.body.message).toEqual('MISSING_DATA');
   });
 });

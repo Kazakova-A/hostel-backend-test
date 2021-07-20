@@ -17,25 +17,25 @@ export class ReportsController {
   async getFreeRooms(@Req() req, @Res() res, @Query() query) {
     try {
       const stats = {};
-      const { startDate, endDate } = query;
+      const { start_date, end_date } = query;
       const defaultQuery = `
         SELECT b.*, h."name"
               FROM "booking" b
               LEFT JOIN "hotel_rooms" h ON b."room_id" = h."id"
       `;
 
-      if (!(startDate && endDate)) {
+      if (!(start_date && end_date)) {
         return response(req, res, rs[400], sm.missingData);
       }
 
-      const startMonth = new Date(startDate * 1000).getMonth();
-      const endMonth = new Date(endDate * 1000).getMonth();
-      const diff = countTimeDifference(startDate, endDate, 'months');
+      const startMonth = new Date(start_date * 1000).getMonth();
+      const endMonth = new Date(end_date * 1000).getMonth();
+      const diff = countTimeDifference(start_date, end_date, 'months');
 
       if (diff === 0) {
         const query = `
               ${defaultQuery}
-              WHERE (b."start_date" >= ${startDate} AND b."end_date" <= ${endDate})
+              WHERE (b."start_date" >= ${start_date} AND b."end_date" <= ${end_date})
           `;
 
         const bookedRooms: BookedRoomInfo[] =
@@ -49,7 +49,7 @@ export class ReportsController {
 
       if (diff >= 1) {
         // get the 1st day of the 2 month
-        const firstMonthEndDate = moment(startDate * 1000)
+        const firstMonthEndDate = moment(start_date * 1000)
           .seconds(0)
           .minute(0)
           .hours(0)
@@ -63,8 +63,8 @@ export class ReportsController {
         // get stats for the first month
         const firstMonthStatsQuery = `
           ${defaultQuery}
-                WHERE (b."start_date" < ${startDate} AND b."start_date" <= ${firstMonthEnd})
-                OR (b."end_date" >= ${startDate} AND b."end_date" <= ${firstMonthEnd})
+                WHERE (b."start_date" < ${start_date} AND b."start_date" <= ${firstMonthEnd})
+                OR (b."end_date" >= ${start_date} AND b."end_date" <= ${firstMonthEnd})
             `;
 
         const firstMonthBookedRooms: BookedRoomInfo[] =
@@ -72,7 +72,7 @@ export class ReportsController {
 
         const firstMonthStats = createStatsForMonth(
           firstMonthBookedRooms,
-          startDate,
+          start_date,
           Number(firstMonthEnd),
         );
 
@@ -82,7 +82,7 @@ export class ReportsController {
           const startCycle = startMonth === 11 ? 0 : startMonth + 1;
 
           for (let i = startCycle; i !== endMonth; ) {
-            const iterationMonthStartDate = moment(startDate * 1000)
+            const iterationMonthStartDate = moment(start_date * 1000)
               .seconds(0)
               .minute(0)
               .hours(0)
@@ -114,7 +114,7 @@ export class ReportsController {
         }
 
         // get stats for the last month
-        const lasMonthStartDay = moment(endDate * 1000)
+        const lasMonthStartDay = moment(end_date * 1000)
           .seconds(0)
           .minute(0)
           .hours(0)
@@ -124,7 +124,7 @@ export class ReportsController {
 
         const lastMonthStatsQuery = `
         ${defaultQuery}
-              WHERE (b."start_date" < ${endDate} AND b."end_date" >= ${lasMonthStartDay})
+              WHERE (b."start_date" < ${end_date} AND b."end_date" >= ${lasMonthStartDay})
           `;
 
         const lastMonthBookedRooms: BookedRoomInfo[] =
@@ -132,7 +132,7 @@ export class ReportsController {
         const secondMonthStats = createStatsForMonth(
           lastMonthBookedRooms,
           Number(lasMonthStartDay),
-          Number(endDate),
+          Number(end_date),
         );
 
         stats[MONTHS[endMonth]] = secondMonthStats;

@@ -64,9 +64,8 @@ npm run start:dev
 Runs all of the available tests:
 
 ```shell script
-npm run test
+npm run test:e2e
 ```
-If some of the tests are not passing (this can be the case if you tried to run the tests before the synchronization), you can drop the database, run the synchronization script, and then run the tests again
 
 ### Database
 
