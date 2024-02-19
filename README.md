@@ -8,9 +8,6 @@ Stack: [Node](https://nodejs.org/en/), [Nest.js](https://nestjs.com/), [PostgreS
 
 Local PostgreSQL installation is required
 
-PostgreSQL can be installed on MacOS with Brew:
-https://gist.github.com/peterdee/087dae4bb1ed7937c6f1d650059113fe
-
 Install PostgreSQL on Ubuntu:
 https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04
 
